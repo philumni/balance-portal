@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balance Portal — Sign In</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3347;
+      --text:#e8eaf0; --muted:#6b7280; --accent:#6366f1; --accent-g:rgba(99,102,241,0.25);
+      --error:#ef4444; --success:#22c55e;
+    }
+    body { background:var(--bg); font-family:'Plus Jakarta Sans',sans-serif; color:var(--text);
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+    body::before { content:''; position:fixed; inset:0;
+      background-image: linear-gradient(rgba(99,102,241,0.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(99,102,241,0.03) 1px,transparent 1px);
+      background-size:40px 40px; pointer-events:none; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:16px;
+      padding:2.5rem 2rem; width:100%; max-width:420px; position:relative; box-shadow:0 0 60px rgba(0,0,0,0.4); }
+    .card::before { content:''; position:absolute; top:0; left:2rem; right:2rem; height:2px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent); border-radius:2px; }
+    .logo { display:flex; align-items:center; gap:0.6rem; margin-bottom:2rem; }
+    .logo-mark { width:34px; height:34px; background:var(--accent); border-radius:8px;
+      display:flex; align-items:center; justify-content:center; font-size:1rem;
+      box-shadow:0 0 20px var(--accent-g); }
+    .logo-name { font-family:'IBM Plex Mono',monospace; font-size:1rem; font-weight:500; }
+    h1 { font-size:1.6rem; font-weight:700; margin-bottom:0.35rem; letter-spacing:-0.02em; }
+    .subtitle { font-size:0.875rem; color:var(--muted); margin-bottom:2rem; }
+    .alert { padding:0.75rem 1rem; border-radius:8px; font-size:0.85rem; margin-bottom:1.25rem; display:none; }
+    .alert.show { display:block; }
+    .alert-error   { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.3);  color:#fca5a5; }
+    .alert-success { background:rgba(34,197,94,0.1);  border:1px solid rgba(34,197,94,0.3);  color:#86efac; }
+    .form-group { margin-bottom:1.1rem; }
+    label { display:block; font-size:0.8rem; font-weight:600; color:var(--muted);
+      letter-spacing:0.05em; text-transform:uppercase; margin-bottom:0.4rem; }
+    input { width:100%; padding:0.7rem 0.9rem; background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; color:var(--text); font-family:inherit; font-size:0.95rem;
+      transition:border-color 0.2s,box-shadow 0.2s; outline:none; }
+    input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-g); }
+    input::placeholder { color:#3d4257; }
+    .btn { width:100%; padding:0.8rem; background:var(--accent); color:#fff; font-family:inherit;
+      font-size:0.95rem; font-weight:600; border:none; border-radius:8px; cursor:pointer;
+      margin-top:0.5rem; transition:opacity 0.2s; }
+    .btn:hover { opacity:0.9; } .btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted);
+      margin-top:0.75rem; }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); opacity:1; }
+    .spinner { display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3);
+      border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .divider { display:flex; align-items:center; gap:0.75rem; margin:1.5rem 0; color:var(--muted); font-size:0.8rem; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .hint { margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); }
+    .hint-title { font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.1em; color:var(--muted); margin-bottom:0.6rem; }
+    .hint-table { width:100%; border-collapse:collapse; font-size:0.8rem; font-family:'IBM Plex Mono',monospace; }
+    .hint-table th,.hint-table td { padding:0.35rem 0.6rem; border:1px solid var(--border); text-align:left; }
+    .hint-table th { background:var(--surface2); color:var(--muted); font-weight:500; }
+    .hint-table td { color:#a5b4fc; } .hint-table td:last-child { color:var(--muted); }
+    .hint-table tbody tr { cursor:pointer; transition:background 0.15s; }
+    .hint-table tbody tr:hover { background:var(--surface2); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-mark">⬡</div>
+    <span class="logo-name">BalancePortal</span>
+  </div>
+  <h1>Sign In</h1>
+  <p class="subtitle">JWT-authenticated · stateless · BCrypt passwords</p>
+  <div id="alert" class="alert"></div>
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="e.g. jsmith" autocomplete="username"/>
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password"/>
+  </div>
+  <button class="btn" id="loginBtn" onclick="handleLogin()">
+    <span id="btnText">Sign In</span>
+    <div id="btnSpinner" class="spinner"></div>
+  </button>
+  <div class="divider">or</div>
+  <button class="btn btn-outline" onclick="window.location.href='register.html'">
+    Create an Account
+  </button>
+  <div class="hint">
+    <div class="hint-title">Demo accounts — click to fill</div>
+    <table class="hint-table">
+      <thead><tr><th>Username</th><th>Password</th></tr></thead>
+      <tbody>
+        <tr onclick="fill('jsmith','pass123')"><td>jsmith</td><td>pass123</td></tr>
+        <tr onclick="fill('mjohnson','secure99')"><td>mjohnson</td><td>secure99</td></tr>
+        <tr onclick="fill('bdavis','letmein')"><td>bdavis</td><td>letmein</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script src="js/login.js"></script>
+</body>
+</html>

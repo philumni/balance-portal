@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balance Portal — Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --surface2: #22263a;
+      --border:   #2e3347;
+      --text:     #e8eaf0;
+      --muted:    #6b7280;
+      --accent:   #6366f1;
+      --accent-g: rgba(99,102,241,0.2);
+
+      --paid:     #22c55e;  --paid-bg:    rgba(34,197,94,0.1);
+      --unpaid:   #eab308;  --unpaid-bg:  rgba(234,179,8,0.1);
+      --overdue:  #ef4444;  --overdue-bg: rgba(239,68,68,0.1);
+      --pending:  #38bdf8;  --pending-bg: rgba(56,189,248,0.1);
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,17,23,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+
+    .logo-mark {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      box-shadow: 0 0 16px var(--accent-g);
+    }
+
+    .logo-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.92rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 1rem;
+    }
+
+    #navUser {
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    #navUser strong { color: var(--text); }
+
+    #logoutBtn {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.4);
+      background: transparent;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    #logoutBtn:hover { background: var(--accent); color: #fff; }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      max-width: 1160px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      position: relative; z-index: 1;
+    }
+
+    .page-header { margin-bottom: 2rem; }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .page-meta {
+      font-size: 0.83rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── STAT CARDS ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1rem;
+    }
+
+    .card.highlight {
+      border-color: rgba(99,102,241,0.4);
+      box-shadow: 0 0 24px var(--accent-g);
+    }
+
+    .card-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-value {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .card-value.accent  { color: var(--accent); font-size: 1.35rem; }
+    .card-value.paid    { color: var(--paid); }
+    .card-value.unpaid  { color: var(--unpaid); }
+    .card-value.overdue { color: var(--overdue); }
+    .card-value.pending { color: var(--pending); }
+
+    /* ── TABLE SECTION ── */
+    .table-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .table-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .filter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead tr { background: var(--surface2); }
+
+    th {
+      text-align: left;
+      padding: 0.7rem 1.2rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.85rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    .inv-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .inv-amount { font-weight: 600; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-paid    { background: var(--paid-bg);    color: var(--paid);    border: 1px solid rgba(34,197,94,0.25); }
+    .status-unpaid  { background: var(--unpaid-bg);  color: var(--unpaid);  border: 1px solid rgba(234,179,8,0.25); }
+    .status-overdue { background: var(--overdue-bg); color: var(--overdue); border: 1px solid rgba(239,68,68,0.25); }
+    .status-pending { background: var(--pending-bg); color: var(--pending); border: 1px solid rgba(56,189,248,0.25); }
+
+    /* ── LOADING STATE ── */
+    #loadingOverlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1rem;
+    }
+
+    .big-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── EMPTY/ERROR states ── */
+    .state-msg {
+      padding: 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.25rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      position: relative; z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .page-title { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay — shown until JS fetches data -->
+<div id="loadingOverlay">
+  <div class="big-spinner"></div>
+  <div class="loading-text">Verifying token &amp; loading account…</div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">
+    <div class="logo-mark">⬡</div>
+    <span class="logo-name">BalancePortal</span>
+  </div>
+  <div class="nav-right">
+    <span id="navUser">Welcome, <strong id="navName">—</strong></span>
+    <button id="logoutBtn" onclick="handleLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Account Overview</h1>
+    <div class="page-meta" id="pageMeta">Account #— &nbsp;·&nbsp; —</div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="cards">
+    <div class="card highlight">
+      <div class="card-label">Outstanding Balance</div>
+      <div class="card-value accent" id="statBalance">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Invoices</div>
+      <div class="card-value" id="statTotal">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Paid</div>
+      <div class="card-value paid" id="statPaid">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Unpaid</div>
+      <div class="card-value unpaid" id="statUnpaid">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Overdue</div>
+      <div class="card-value overdue" id="statOverdue">—</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Pending</div>
+      <div class="card-value pending" id="statPending">—</div>
+    </div>
+  </div>
+
+  <!-- Invoice table -->
+  <div class="table-section">
+    <div class="table-toolbar">
+      <span class="table-title">Invoice History</span>
+      <div class="filter-wrap">
+        <span>Filter:</span>
+        <select id="statusFilter" onchange="filterTable(this.value)">
+          <option value="ALL">All statuses</option>
+          <option value="PAID">Paid</option>
+          <option value="UNPAID">Unpaid</option>
+          <option value="OVERDUE">Overdue</option>
+          <option value="PENDING">Pending</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="invoiceTable">
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Description</th>
+            <th>Invoice Date</th>
+            <th>Due Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="invoiceBody">
+          <tr><td colspan="6" class="state-msg">Loading invoices…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 BalancePortal &mdash; JWT Demo Application</footer>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

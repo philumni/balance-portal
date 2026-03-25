@@ -1,0 +1,83 @@
+services:
+
+  # ── MariaDB ────────────────────────────────────────────────
+  mariadb:
+    image: mariadb:11.2
+    container_name: balance-portal-db
+    restart: unless-stopped
+
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE:      ${MARIADB_DATABASE}
+      MARIADB_USER:          ${MARIADB_USER}
+      MARIADB_PASSWORD:      ${MARIADB_PASSWORD}
+
+    ports:
+      - "3306:3306"   # expose to host so you can connect with DBeaver/Workbench
+
+    volumes:
+      # Named volume — data persists across docker-compose down/up
+      - mariadb_data:/var/lib/mysql
+
+      # SQL files in this folder run automatically on first start
+      # (only when the data volume is empty / first time)
+      # Files run in alphabetical order: 01-schema.sql then 02-seed.sql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Tomcat ─────────────────────────────────────────────────
+  tomcat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: balance-portal-tomcat
+    restart: unless-stopped
+
+    # Tomcat waits until MariaDB passes its healthcheck before starting.
+    # Without this, Tomcat boots before MariaDB is ready and falls back
+    # to MockDataStore even though the DB will eventually be available.
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      # DB connection — DB_HOST must match the service name above ("mariadb")
+      # Docker's internal DNS resolves service names to container IPs
+      DB_HOST:     ${DB_HOST}
+      DB_PORT:     ${DB_PORT}
+      DB_NAME:     ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # SMTP
+      SMTP_HOST:     ${SMTP_HOST}
+      SMTP_PORT:     ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM:     ${SMTP_FROM}
+
+      # App
+      APP_BASE_URL: ${APP_BASE_URL}
+
+    # Optional: stream Tomcat logs directly to docker-compose up output
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ── Named Volumes ───────────────────────────────────────────
+# mariadb_data lives outside the container filesystem.
+# docker-compose down does NOT delete it.
+# docker-compose down -v DOES delete it (full reset).
+volumes:
+  mariadb_data:

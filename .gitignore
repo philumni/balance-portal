@@ -1,0 +1,22 @@
+# ── Credentials — NEVER commit these ──
+.env
+
+# ── Maven build output ──
+target/
+
+# ── IDE files ──
+.idea/
+*.iml
+.vscode/
+*.classpath
+*.project
+.settings/
+
+# ── OS files ──
+.DS_Store
+Thumbs.db
+
+# ── Docker ──
+# .env.example is safe to commit — it has no real values
+# docker-compose.yml is safe to commit
+# Dockerfile is safe to commit
