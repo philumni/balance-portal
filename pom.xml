@@ -9,7 +9,7 @@
     <artifactId>balance-portal-db</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <n>Balance Portal — MariaDB Edition</n>
+    <name>Balance Portal — MariaDB Edition</name>
     <description>JWT + Ajax + Real Email + MariaDB via HikariCP + Repository Pattern</description>
 
     <properties>
