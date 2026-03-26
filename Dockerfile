@@ -33,8 +33,10 @@ FROM tomcat:10.1-jdk17
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy the WAR from the builder stage
-COPY --from=builder /build/target/balance-portal-db.war \
-     /usr/local/tomcat/webapps/ROOT.war
+COPY --from=builder /build/target/*.war \
+     /usr/local/tomcat/webapps/ROOT.
+
+
 
 # Tomcat auto-deploys any .war in the webapps directory on startup.
 # No extra configuration needed.
