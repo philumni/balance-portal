@@ -11,7 +11,7 @@
  * immediately authenticated the moment their email is confirmed.
  */
 
-const API_BASE = '/balance-portal-reg';
+const API_BASE = window.location.pathname.replace(/\/[^/]*$/, '');
 
 (async function run() {
   const params = new URLSearchParams(window.location.search);

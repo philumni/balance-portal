@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-@WebServlet("/")
+@WebServlet("/api/health")
 public class HealthCheckServlet extends BaseApiServlet {
 
     @Override

@@ -12,7 +12,7 @@
  */
 
 // Context path — change this if you deploy under a different root
-const API_BASE = '/balance-portal-jwt';
+const API_BASE = window.location.pathname.replace(/\/[^/]*$/, '');
 
 // ── On page load: if a valid token already exists, skip straight to dashboard ──
 (function checkExistingToken() {

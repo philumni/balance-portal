@@ -10,7 +10,7 @@
  * The server never renders HTML. This file IS the dashboard logic.
  */
 
-const API_BASE = '/balance-portal-jwt';
+const API_BASE = window.location.pathname.replace(/\/[^/]*$/, '');
 
 // ── Page init ─────────────────────────────────────────────────────────────────
 

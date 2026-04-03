@@ -8,7 +8,7 @@
  *     The real verification email is sent server-side via SMTP.
  */
 
-const API_BASE = '/balance-portal-reg';
+const API_BASE = window.location.pathname.replace(/\/[^/]*$/, '');
 
 // ── Password strength meter ──────────────────────────────────────────────────
 
